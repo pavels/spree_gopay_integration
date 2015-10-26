@@ -1,0 +1,7 @@
+<% 
+	resp_doc = SpreeGopayIntegration::Gopayapi.get_payment_info(payment.response_code)
+%>
+
+<pre>
+<%= JSON.pretty_generate(resp_doc) %>
+</pre>
