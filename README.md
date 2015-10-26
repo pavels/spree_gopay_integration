@@ -16,7 +16,7 @@ Add spree_gopay_integration to your Gemfile:
 gem 'spree_gopay_integration'
 ```
 
-Bundle your dependencies and run the installation generator:
+Bundle your dependencies:
 
 ```shell
 bundle
