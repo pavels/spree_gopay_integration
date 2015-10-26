@@ -1,5 +1,6 @@
 require 'spree_core'
 require 'configurations'
+require 'spree_gopay_integration/version'
 require 'spree_gopay_integration/engine'
 require 'spree_gopay_integration/configuration'
 require 'spree_gopay_integration/gopayapi'

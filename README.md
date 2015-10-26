@@ -1,6 +1,8 @@
 Spree GoPay Integration
 =====================
 
+[![Gem Version](https://badge.fury.io/rb/spree_gopay_integration.svg)](https://badge.fury.io/rb/spree_gopay_integration)
+
 Spree extension for integration with GoPay payment gateway.
 
 https://www.platebnibrana.cz/

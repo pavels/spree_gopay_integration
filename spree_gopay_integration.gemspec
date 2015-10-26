@@ -1,10 +1,14 @@
 # encoding: UTF-8
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'spree_gopay_integration/version'
+
 Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.name        = 'spree_gopay_integration'
-  s.version     = '1.0.0'
-  s.summary     = 'Gopay integration for spree'
-  s.description = 'Gopay integration for spree'
+  s.version     = SpreeGopayIntegration::VERSION
+  s.summary     = 'Gopay integration for spree.'
+  s.description = 'Spree extension for integration with GoPay payment gateway.'
   s.required_ruby_version = '>= 2.0.0'
 
   s.author    = 'Pavel Sorejs'
