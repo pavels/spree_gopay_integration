@@ -17,6 +17,8 @@ module SpreeGopayIntegration
         uri = ""
         if SpreeGopayIntegration.configuration.environment.to_sym == :test
           uri = "https://gw.sandbox.gopay.com/api"
+        else
+          uri = "https://gate.gopay.cz/api"
         end
         return uri
       end
