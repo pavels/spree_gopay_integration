@@ -20,7 +20,12 @@ Spree::CheckoutController.class_eval do
 
       items_hash << {
         name: Spree.t(:shipping_total),
-        amount: (@order.shipments.to_a.sum(&:cost) * 100).to_i
+        amount: (@order.shipments.to_a.sum(&:discounted_cost) * 100).to_i
+      }
+
+      items_hash << {
+        name: Spree.t(:tax),
+        amount: (@order.additional_tax_total * 100).to_i
       }
 
       order = SpreeGopayIntegration::Gopayapi.create_payment({
