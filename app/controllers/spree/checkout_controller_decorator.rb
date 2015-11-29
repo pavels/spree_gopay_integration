@@ -18,15 +18,17 @@ Spree::CheckoutController.class_eval do
         }
       end
 
+      shipment_cost = @order.shipments.to_a.sum(&:discounted_cost)
+
       items_hash << {
         name: Spree.t(:shipping_total),
-        amount: (@order.shipments.to_a.sum(&:discounted_cost) * 100).to_i
-      }
+        amount: (shipment_cost * 100).to_i
+      } if shipment_cost > 0
 
       items_hash << {
         name: Spree.t(:tax),
         amount: (@order.additional_tax_total * 100).to_i
-      }
+      } if @order.additional_tax_total > 0
 
       order = SpreeGopayIntegration::Gopayapi.create_payment({
           target: {
