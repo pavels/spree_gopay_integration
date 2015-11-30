@@ -11,7 +11,7 @@ module Spree
       payment = order.payments.last
 
       if gopay_order["state"] == "PAID"
-          payment_success(order,nil)
+          payment_success(order,id)
           payment.complete!         
       end
       
