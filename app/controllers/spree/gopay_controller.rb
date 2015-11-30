@@ -1,6 +1,6 @@
 module Spree
   class GopayController < Spree::BaseController
-    protect_from_forgery except: [:notify, :return]
+    protect_from_forgery except: [:notify, :continue]
 
     def notify
       id = params[:id]
@@ -15,7 +15,7 @@ module Spree
       render text: "OK"
     end
 
-    def return
+    def continue
       id = params[:id]
 
       gopay_order = SpreeGopayIntegration::Gopayapi.get_payment_info(id)

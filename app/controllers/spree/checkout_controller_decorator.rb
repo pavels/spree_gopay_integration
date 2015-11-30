@@ -53,7 +53,7 @@ Spree::CheckoutController.class_eval do
           order_description: @current_store.name,
           items: items_hash,
           callback: {
-            return_url: gopay_return_url,
+            return_url: gopay_continue_url,
             notification_url: gopay_notify_url
           },
           lang: I18n.locale
