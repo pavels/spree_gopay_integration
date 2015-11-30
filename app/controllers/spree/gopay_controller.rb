@@ -9,8 +9,7 @@ module Spree
       order = Spree::Order.friendly.find(gopay_order["order_number"])
       
       if gopay_order["state"] == "PAID"
-          payment = payment_success(order,id)
-          payment.complete!         
+        payment_success(order,id,true)
       end
       
       render text: "OK"
@@ -24,18 +23,19 @@ module Spree
 
       if(gopay_order["state"] == "PAYMENT_METHOD_CHOSEN" || gopay_order["state"] == "PAID")
         payment_success(order, id)
-        redirect_to order_path(order)
-        return
-      end
+        session[:order_id] = nil
 
-      redirect_to checkout_path
+        redirect_to order_path(order)
+      else
+        redirect_to checkout_path
+      end
     end
 
     private
 
-      def payment_success(order, id)
+      def payment_success(order, id, complete_payment = false)
         order.with_lock do
-          return order.payments.last if order.payments.count > 0
+          return if order.payments.count > 0
 
           payment_method = Spree::PaymentMethod.where(type: "Spree::PaymentMethod::Gopay").first
           
@@ -52,9 +52,13 @@ module Spree
 
           payment.pend!
 
-          return payment
+          if complete_payment
+            payment.complete!
+          end
 
+          order.update!
         end
-      end   
+      end  
+
   end
 end
