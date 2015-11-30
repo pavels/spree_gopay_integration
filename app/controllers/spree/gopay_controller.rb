@@ -1,17 +1,15 @@
 module Spree
   class GopayController < Spree::BaseController
-    protect_from_forgery except: [:notify, :continue]
+    protect_from_forgery except: [:notify, :return]
 
     def notify
       id = params[:id]
 
       gopay_order = SpreeGopayIntegration::Gopayapi.get_payment_info(id)
-
       order = Spree::Order.friendly.find(gopay_order["order_number"])
-      payment = order.payments.last
-
+      
       if gopay_order["state"] == "PAID"
-          payment_success(order,id)
+          payment = payment_success(order,id)
           payment.complete!         
       end
       
@@ -22,7 +20,6 @@ module Spree
       id = params[:id]
 
       gopay_order = SpreeGopayIntegration::Gopayapi.get_payment_info(id)
-
       order = Spree::Order.friendly.find(gopay_order["order_number"])
 
       if(gopay_order["state"] == "PAYMENT_METHOD_CHOSEN" || gopay_order["state"] == "PAID")
@@ -37,24 +34,27 @@ module Spree
     private
 
       def payment_success(order, id)
+        order.with_lock do
+          return order.payments.last if order.payments.count > 0
 
-        return if order.payments.count > 0
+          payment_method = Spree::PaymentMethod.where(type: "Spree::PaymentMethod::Gopay").first
+          
+          payment = order.payments.build(
+            payment_method_id: payment_method.id,
+            amount: order.total,
+            state: 'checkout'
+          )
 
-        payment_method = Spree::PaymentMethod.where(type: "Spree::PaymentMethod::Gopay").first
+          payment.response_code = id
 
-        payment = order.payments.build(
-          payment_method_id: payment_method.id,
-          amount: order.total,
-          state: 'checkout'
-        )
+          payment.save
+          order.next
 
-        payment.response_code = id
+          payment.pend!
 
-        payment.save
-        order.next
+          return payment
 
-        payment.pend!
-
+        end
       end   
   end
 end
