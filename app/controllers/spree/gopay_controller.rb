@@ -35,7 +35,15 @@ module Spree
 
       def payment_success(order, id, complete_payment = false)
         order.with_lock do
-          return if order.payments.count > 0
+
+          if order.payments.count > 0            
+            if complete_payment
+              order.payments.last.complete!
+              order.update!
+            end
+
+            return
+          end
 
           payment_method = Spree::PaymentMethod.where(type: "Spree::PaymentMethod::Gopay").first
           
