@@ -44,7 +44,7 @@ Spree::CheckoutController.class_eval do
               street: @order.bill_address.address1,
               city: @order.bill_address.city,
               postal_code: @order.bill_address.zipcode,
-              country_code: @order.bill_address.country.iso
+              country_code: @order.bill_address.country.iso3
             }
           },
           amount: (@order.total * 100).to_i,
