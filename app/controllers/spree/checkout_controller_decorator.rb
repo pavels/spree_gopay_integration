@@ -30,7 +30,7 @@ Spree::CheckoutController.class_eval do
         amount: (@order.additional_tax_total * 100).to_i
       } if @order.additional_tax_total > 0
 
-      adjustment = ( @order.total - items_hash.map{|i| i[:amount]}.sum ) * -1
+      adjustment = ( (@order.total * 100) - items_hash.map{|i| i[:amount]}.sum ) * -1
 
       items_hash << {
         name: Spree.t(:adjustment),
