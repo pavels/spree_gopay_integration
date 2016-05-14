@@ -30,6 +30,13 @@ Spree::CheckoutController.class_eval do
         amount: (@order.additional_tax_total * 100).to_i
       } if @order.additional_tax_total > 0
 
+      adjustment = ( @order.total - items_hash.sum(&:amount) ) * -1
+
+      items_hash << {
+        name: Spree.t(:tax),
+        amount: adjustment.to_i
+      } if adjustment > 0
+
       order = SpreeGopayIntegration::Gopayapi.create_payment({
           target: {
             type: "ACCOUNT",
