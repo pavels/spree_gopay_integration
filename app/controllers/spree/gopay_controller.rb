@@ -22,51 +22,46 @@ module Spree
       order = Spree::Order.friendly.find(gopay_order["order_number"])
 
       if(gopay_order["state"] == "PAYMENT_METHOD_CHOSEN" || gopay_order["state"] == "PAID")
-        payment_success(order, id)
+        payment_success(order, id, gopay_order["state"] == "PAID")
         session[:order_id] = nil
 
         redirect_to order_path(order)
       else
+        flash[:error] = Spree.t(:payment_has_been_cancelled)
         redirect_to checkout_path
       end
     end
 
     private
 
-      def payment_success(order, id, complete_payment = false)
-        order.with_lock do
-
-          if order.payments.count > 0            
-            if complete_payment
-              order.payments.last.complete!
-              order.update!
-            end
-
-            return
-          end
-
-          payment_method = Spree::PaymentMethod.where(type: "Spree::PaymentMethod::Gopay").first
-          
-          payment = order.payments.build(
-            payment_method_id: payment_method.id,
+    def payment_success(order, id, complete_payment = false)
+      order.with_lock do
+        payment_method = Spree::PaymentMethod.where(type: "Spree::PaymentMethod::Gopay").first
+        payments = order.payments.reload.where(payment_method: payment_method)
+        payment = payments.last
+        
+        if !payment.present?
+          payment = payments.create!({
             amount: order.total,
-            state: 'checkout'
-          )
-
-          payment.response_code = id
-
-          payment.save
-          order.next
-
-          payment.pend!
-
-          if complete_payment
-            payment.complete!
-          end
-
-          order.update!
+            payment_method: Spree::PaymentMethod.where(type: "Spree::PaymentMethod::Gopay").first
+          })
         end
-      end  
+        
+        until order.state == "complete"
+          if order.next!
+            order.update_with_updater!
+          end
+        end
+
+        payment.update!({response_code: id})
+
+        if complete_payment
+          payment.complete!
+        else
+          payment.pend!
+        end
+      end
+    end  
 
   end
 end
