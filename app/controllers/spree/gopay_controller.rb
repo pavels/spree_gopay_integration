@@ -46,7 +46,7 @@ module Spree
             payment_method: Spree::PaymentMethod.where(type: "Spree::PaymentMethod::Gopay").first
           })
         end
-        
+
         until order.state == "complete"
           if order.next!
             order.update_with_updater!
@@ -56,9 +56,7 @@ module Spree
         payment.update!({response_code: id})
 
         if complete_payment
-          payment.complete!
-        else
-          payment.pend!
+          payment.capture!
         end
       end
     end  

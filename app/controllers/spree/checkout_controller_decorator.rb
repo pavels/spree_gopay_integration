@@ -4,67 +4,14 @@ Spree::CheckoutController.class_eval do
 
   private
 
-  def pay_with_gopay    
-    items_hash = @order.line_items.collect do |item|
-      {
-        name: "#{item.name} - #{item.quantity}x",
-        amount: (item.quantity * item.price * 100).to_i
-      }
-    end
+  def pay_with_gopay(payment_method)
+    payment = payment_method.request_payment(@order, gopay_continue_url, gopay_notify_url)
 
-    shipment_cost = @order.shipments.to_a.sum(&:discounted_cost)
-
-    items_hash << {
-      name: Spree.t(:shipping_total),
-      amount: (shipment_cost * 100).to_i
-    } if shipment_cost > 0
-
-    items_hash << {
-      name: Spree.t(:tax),
-      amount: (@order.additional_tax_total * 100).to_i
-    } if @order.additional_tax_total > 0
-
-    adjustment = ( (@order.total * 100) - items_hash.map{|i| i[:amount]}.sum ) * -1
-
-    items_hash << {
-      name: Spree.t(:adjustment),
-      amount: adjustment.to_i
-    } if adjustment > 0
-
-    order = SpreeGopayIntegration::Gopayapi.create_payment({
-        target: {
-          type: "ACCOUNT",
-          goid: SpreeGopayIntegration.configuration.goid
-        },
-        payer: {
-          contact: {
-            email: @order.email,
-            first_name: @order.bill_address.firstname,
-            last_name: @order.bill_address.lastname,
-            phone_number: @order.bill_address.phone,
-            street: @order.bill_address.address1,
-            city: @order.bill_address.city,
-            postal_code: @order.bill_address.zipcode,
-            country_code: @order.bill_address.country.iso3
-          }
-        },
-        amount: (@order.total * 100).to_i,
-        currency: @order.currency,
-        order_number: @order.number,
-        order_description: @current_store.name,
-        items: items_hash,
-        callback: {
-          return_url: gopay_continue_url,
-          notification_url: gopay_notify_url
-        },
-        lang: I18n.locale
-      })
-
-    if order["state"] != "CREATED"
+    if payment["state"] != "CREATED"
       raise "Failed to create gopay order."
     end
 
-    redirect_to order["gw_url"]
+    redirect_to payment["gw_url"]
   rescue StandardError => e
     gopay_error(e)
   end
@@ -79,7 +26,7 @@ Spree::CheckoutController.class_eval do
     payment_method = Spree::PaymentMethod.find(params[:order][:payments_attributes].first[:payment_method_id])
     if payment_method.kind_of?(Spree::PaymentMethod::Gopay)
       if @order.update_from_params(params, permitted_checkout_attributes, request.headers.env)
-        pay_with_gopay
+        pay_with_gopay(payment_method)
       end
     end    
   end
