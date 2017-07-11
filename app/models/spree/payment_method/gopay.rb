@@ -81,5 +81,15 @@ module Spree
       return payment 
     end
 
+    def cancel(response)
+      spree_payment = Spree::Payment.where(response_code: response).first
+      refund = SpreeGopayIntegration::Gopayapi.refund_payment(spree_payment.response_code, (spree_payment.amount * 100).to_i)
+
+      if refund["result"] == "FINISHED"
+        ActiveMerchant::Billing::Response.new(true, 'Refund Successful', refund.to_hash)
+      else
+        ActiveMerchant::Billing::Response.new(false, refund["errors"].collect{ |e| e["message"] }.join(' '), refund.to_hash)
+      end
+    end
   end
 end

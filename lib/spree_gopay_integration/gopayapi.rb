@@ -12,6 +12,10 @@ module SpreeGopayIntegration
         call_gopay("payments/payment/#{payment_id}")
       end
 
+      def refund_payment(payment_id, amount)
+        call_gopay("payments/payment/#{payment_id}/refund", {amount: amount})
+      end
+
       private
       def gopay_uri_base
         uri = ""
