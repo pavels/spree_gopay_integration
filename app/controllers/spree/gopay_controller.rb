@@ -6,7 +6,7 @@ module Spree
       id = params[:id]
 
       gopay_order = SpreeGopayIntegration::Gopayapi.get_payment_info(id)
-      order = Spree::Order.friendly.find(gopay_order["order_number"])
+      order = Spree::Order.find_by!(number: gopay_order["order_number"])
       
       if gopay_order["state"] == "PAID"
         payment_success(order,id,true)
@@ -19,7 +19,7 @@ module Spree
       id = params[:id]
 
       gopay_order = SpreeGopayIntegration::Gopayapi.get_payment_info(id)
-      order = Spree::Order.friendly.find(gopay_order["order_number"])
+      order = Spree::Order.find_by!(number: gopay_order["order_number"])
 
       if(gopay_order["state"] == "PAYMENT_METHOD_CHOSEN" || gopay_order["state"] == "PAID")
         payment_success(order, id, gopay_order["state"] == "PAID")

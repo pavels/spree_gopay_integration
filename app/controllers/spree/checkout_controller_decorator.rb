@@ -1,6 +1,6 @@
 Spree::CheckoutController.class_eval do
 
-  before_filter :gopay_hook, only: :update, if: proc { params[:state].eql?('payment') }
+  before_action :gopay_hook, only: :update, if: proc { params[:state].eql?('payment') }
 
   private
 

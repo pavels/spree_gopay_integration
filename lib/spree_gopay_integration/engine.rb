@@ -22,5 +22,7 @@ module SpreeGopayIntegration
       app.config.spree.payment_methods << Spree::PaymentMethod::Gopay
     end
 
+    config.assets.precompile += %w( spree_gopay_integration/* )
+
   end
 end
