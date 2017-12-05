@@ -12,7 +12,7 @@ module Spree
         payment_success(order,id,true)
       end
       
-      render text: "OK"
+      render plain: "OK"
     end
 
     def continue

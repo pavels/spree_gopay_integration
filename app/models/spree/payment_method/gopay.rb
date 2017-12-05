@@ -91,5 +91,17 @@ module Spree
         ActiveMerchant::Billing::Response.new(false, refund["errors"].collect{ |e| e["message"] }.join(' '), refund.to_hash)
       end
     end
+  
+    def credit(credit_cents, response, options)
+      spree_payment = Spree::Payment.where(response_code: response).first
+      refund = SpreeGopayIntegration::Gopayapi.refund_payment(spree_payment.response_code, credit_cents.to_i)
+
+      if refund["result"] == "FINISHED"
+        ActiveMerchant::Billing::Response.new(true, 'Refund Successful', refund.to_hash)
+      else
+        ActiveMerchant::Billing::Response.new(false, refund["errors"].collect{ |e| e["message"] }.join(' '), refund.to_hash)
+      end      
+    end
+
   end
 end
